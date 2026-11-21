@@ -3,17 +3,21 @@ import { privateKeyToAccount, type PrivateKeyAccount } from "viem/accounts";
 import { createConnector } from "wagmi";
 import { anvil } from "./chains";
 
-export const ANVIL_PATRON = {
-  id: "anvil-patron",
-  name: "Anvil patron",
-  key: "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80" as const,
-};
+function hexKey(value: string | undefined): `0x${string}` | null {
+  if (!value || !/^0x[0-9a-fA-F]{64}$/.test(value)) return null;
+  return value as `0x${string}`;
+}
 
-export const ANVIL_GUEST = {
-  id: "anvil-guest",
-  name: "Anvil guest",
-  key: "0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a" as const,
-};
+/** Local Anvil connectors. Keys come from NEXT_PUBLIC_ANVIL_* which only local dev sets. */
+export function localDevConnectors() {
+  if (process.env.NEXT_PUBLIC_DEV_WALLET !== "true") return [];
+  const patron = hexKey(process.env.NEXT_PUBLIC_ANVIL_PATRON_KEY);
+  const guest = hexKey(process.env.NEXT_PUBLIC_ANVIL_GUEST_KEY);
+  return [
+    patron ? devWallet({ id: "anvil-patron", name: "Anvil patron", key: patron }) : null,
+    guest ? devWallet({ id: "anvil-guest", name: "Anvil guest", key: guest }) : null,
+  ].filter((item) => item !== null);
+}
 
 function providerFor(account: PrivateKeyAccount, getChain: () => Chain) {
   return {

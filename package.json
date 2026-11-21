@@ -13,6 +13,7 @@
   "engines": {
     "node": ">=22"
   },
+  "packageManager": "pnpm@10.33.4",
   "devDependencies": {
     "concurrently": "^9.2.1"
   },

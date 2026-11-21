@@ -1,15 +1,10 @@
 import { createConfig, http, injected } from "wagmi";
 import { anvil, bsc, bscTestnet, opBNB, opBNBTestnet } from "./chains";
-import { ANVIL_GUEST, ANVIL_PATRON, devWallet } from "./dev-wallet";
-
-const dev = process.env.NEXT_PUBLIC_DEV_WALLET === "true";
+import { localDevConnectors } from "./dev-wallet";
 
 export const wagmiConfig = createConfig({
   chains: [anvil, bsc, bscTestnet, opBNB, opBNBTestnet],
-  connectors: [
-    injected(),
-    ...(dev ? [devWallet(ANVIL_PATRON), devWallet(ANVIL_GUEST)] : []),
-  ],
+  connectors: [injected(), ...localDevConnectors()],
   transports: {
     [anvil.id]: http(anvil.rpcUrls.default.http[0]),
     [bsc.id]: http("https://bsc-dataseed.binance.org"),

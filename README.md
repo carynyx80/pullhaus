@@ -50,6 +50,10 @@ Leave `PULL_TOKEN` empty locally and the deploy script creates MockPULL. Point i
 
 ## Deploy
 
+Vercel root is `web`. Railway builds `backend/Dockerfile` from `railway.toml` and checks `GET /health`. Every variable, and whether it is required, is in [DEPLOY.md](DEPLOY.md).
+
+## Deploy details
+
 ### Contracts
 
 Install libraries once if `contracts/lib` is missing:
