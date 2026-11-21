@@ -55,7 +55,8 @@ export function startIndexer(deployment: Deployment) {
     try {
       const cursor = await prisma.cursor.upsert({ where: { id: 1 }, create: { id: 1, block: deployment.blockNumber }, update: {} });
       const latest = Number(await client.getBlockNumber());
-      let from = cursor.block;
+      // A cursor left over from an earlier deployment can sit far below this deployment's first block.
+      let from = Math.max(cursor.block, deployment.blockNumber);
       while (from <= latest) {
         const to = Math.min(latest, from + 900);
         const logs = await client.getLogs({

@@ -6,6 +6,7 @@ import { useAccount, useSignMessage } from "wagmi";
 import { CardView } from "@/components/card-view";
 import { Button } from "@/components/ui/button";
 import { api, signIn } from "@/lib/api";
+import { defaultChain } from "@/lib/chains";
 import { useMyCards } from "@/lib/cards";
 
 export default function InventoryPage() {
@@ -37,7 +38,7 @@ export default function InventoryPage() {
         {address && !signed && (
           <Button
             variant="outline"
-            onClick={() => signIn((message) => signMessageAsync({ message }), address, chainId || 31337).then(() => setSigned(true))}
+            onClick={() => signIn((message) => signMessageAsync({ message }), address, chainId || defaultChain.id).then(() => setSigned(true))}
           >
             Sign in for private art
           </Button>

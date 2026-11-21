@@ -1,7 +1,8 @@
 "use client";
 
 import { emptyDeployment, isDeployed, type Deployment } from "@pullhaus/shared";
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import { useAccount, useSwitchChain } from "wagmi";
 import { API_URL } from "./utils";
 
 type HouseState = {
@@ -35,7 +36,12 @@ export function HouseProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     refresh();
   }, []);
-  return <HouseContext.Provider value={{ deployment, ready, error, refresh }}>{children}</HouseContext.Provider>;
+  return (
+    <HouseContext.Provider value={{ deployment, ready, error, refresh }}>
+      <ChainGuard chainId={isDeployed(deployment) ? deployment.chainId : 0} />
+      {children}
+    </HouseContext.Provider>
+  );
 }
 
 export function useHouse() {
@@ -43,3 +49,20 @@ export function useHouse() {
 }
 
 export { isDeployed };
+
+/// Asks a connected wallet to move to the chain the API is deployed on, once per connection.
+function ChainGuard({ chainId }: { chainId: number }) {
+  const { isConnected, chainId: current } = useAccount();
+  const { switchChain } = useSwitchChain();
+  const asked = useRef(false);
+  useEffect(() => {
+    if (!isConnected) {
+      asked.current = false;
+      return;
+    }
+    if (!chainId || current === chainId || asked.current) return;
+    asked.current = true;
+    switchChain({ chainId });
+  }, [isConnected, current, chainId, switchChain]);
+  return null;
+}

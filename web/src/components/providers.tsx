@@ -7,7 +7,7 @@ import Lenis from "lenis";
 import { useEffect } from "react";
 import { Toaster } from "sonner";
 import { WagmiProvider } from "wagmi";
-import { anvil } from "@/lib/chains";
+import { defaultChain } from "@/lib/chains";
 import { HouseProvider } from "@/lib/house";
 import { wagmiConfig } from "@/lib/wagmi";
 import { AgeGate } from "./age-gate";
@@ -32,7 +32,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider theme={darkTheme({ accentColor: "#e6b17a", accentColorForeground: "#24170f", borderRadius: "large" })} initialChain={anvil}>
+        <RainbowKitProvider theme={darkTheme({ accentColor: "#e6b17a", accentColorForeground: "#24170f", borderRadius: "large" })} initialChain={defaultChain}>
           <HouseProvider>
             <AgeGate />
             <Shell>{children}</Shell>

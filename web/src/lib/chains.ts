@@ -26,4 +26,13 @@ export const opBNBTestnet = defineChain({
 
 export const chains = [anvil, bsc, bscTestnet, opBNB, opBNBTestnet] as const;
 
+// The chain the site points wallets at. NEXT_PUBLIC_CHAIN_ID wins; production falls back to BSC testnet, dev to Anvil.
+const wanted = Number(process.env.NEXT_PUBLIC_CHAIN_ID || (process.env.NODE_ENV === "production" ? bscTestnet.id : anvil.id));
+export const defaultChain = chains.find((chain) => chain.id === wanted) ?? bscTestnet;
+// wagmi treats the first chain as the default for reads while no wallet is connected.
+export const orderedChains = [defaultChain, ...chains.filter((chain) => chain.id !== defaultChain.id)] as unknown as readonly [
+  (typeof chains)[number],
+  ...(typeof chains)[number][],
+];
+
 export { bsc, bscTestnet };

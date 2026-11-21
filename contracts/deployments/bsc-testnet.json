@@ -1,0 +1,18 @@
+{
+  "admin": "0x32CeB2b3564437038b031d1F1EE16e6AcD3aDFD4",
+  "blockNumber": 144105973,
+  "cards": "0xACcF82717A04461cf15c9390F668443442473C9d",
+  "chainId": 97,
+  "forge": "0xe8cAa7960Da8F20dBB3c4cf91e3123a9A6819911",
+  "indexer": "0xae1529CC620d1Ada515d4365d17705db7Cf045fa",
+  "keeper": "0xae1529CC620d1Ada515d4365d17705db7Cf045fa",
+  "localTools": false,
+  "marketplace": "0xA2cBb0212e60135B7441E138FB7204B921C8B83c",
+  "mockToken": true,
+  "mockVrf": true,
+  "packs": "0x43f3dB6DbB788e10Bf9Fe15DD22FABF854f7773b",
+  "pull": "0x9E88f787e10f98BBeb2496f0C790Db14A7C1AE0d",
+  "rewards": "0xFaBE07794B241e181F84311Db3FAEb374439Bb89",
+  "treasury": "0x32CeB2b3564437038b031d1F1EE16e6AcD3aDFD4",
+  "vrfCoordinator": "0xAEfB5fC32EFdF7B4dA8844E07CFBE4b3c1C89Ade"
+}

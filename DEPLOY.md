@@ -23,6 +23,7 @@ The shared package compiles to `dist/` during that build. Next reads those files
 | Variable | Required | Notes |
 | --- | --- | --- |
 | `NEXT_PUBLIC_API_URL` | Required | Public Railway origin, no trailing slash. Example: `https://pullhaus-api.up.railway.app` |
+| `NEXT_PUBLIC_CHAIN_ID` | Optional | Chain wallets are pointed at. Default: BSC testnet `97` in production, Anvil in dev. Set `56` for mainnet. |
 | `COUNTRY_BLOCK_ENABLED` | Optional | `true` turns on the country block. Default off. Read by Next middleware. Not exposed to the browser. |
 | `BLOCKED_COUNTRIES` | Optional | Comma-separated ISO codes, used only when the toggle is `true`. Example: `US,GB`. Matched against `x-vercel-ip-country`. |
 | `NEXT_PUBLIC_DEV_WALLET` | Leave unset | Local only. `true` shows the Anvil patron and guest buttons. Do not set this on Vercel. |
@@ -101,3 +102,37 @@ Set the same `COUNTRY_BLOCK_ENABLED` and `BLOCKED_COUNTRIES` on Vercel and Railw
 2. Create the Railway service, set the required variables, and confirm `GET /health` returns `{"ok":true}`.
 3. Create the Vercel project with root `web`, set `NEXT_PUBLIC_API_URL`, and deploy.
 4. Set Railway `WEB_ORIGIN` to the Vercel URL and redeploy the API so SIWE and CORS match that host.
+
+## BSC testnet deployment (chain 97)
+
+Live testnet addresses. The same values are in `contracts/deployments/bsc-testnet.json`. This deployment uses MockPULL (anyone can call its faucet) and the mock VRF coordinator, so pack randomness is not secure. Do not reuse it for mainnet. Mainnet keeps the Chainlink VRF v2.5 path in `script/Deploy.s.sol`.
+
+| Contract | Address |
+| --- | --- |
+| MockPULL | [`0x9E88f787e10f98BBeb2496f0C790Db14A7C1AE0d`](https://testnet.bscscan.com/address/0x9E88f787e10f98BBeb2496f0C790Db14A7C1AE0d) |
+| MockVRFCoordinator | [`0xAEfB5fC32EFdF7B4dA8844E07CFBE4b3c1C89Ade`](https://testnet.bscscan.com/address/0xAEfB5fC32EFdF7B4dA8844E07CFBE4b3c1C89Ade) |
+| PullhausCards | [`0xACcF82717A04461cf15c9390F668443442473C9d`](https://testnet.bscscan.com/address/0xACcF82717A04461cf15c9390F668443442473C9d) |
+| PullhausRewards | [`0xFaBE07794B241e181F84311Db3FAEb374439Bb89`](https://testnet.bscscan.com/address/0xFaBE07794B241e181F84311Db3FAEb374439Bb89) |
+| PullhausPacks | [`0x43f3dB6DbB788e10Bf9Fe15DD22FABF854f7773b`](https://testnet.bscscan.com/address/0x43f3dB6DbB788e10Bf9Fe15DD22FABF854f7773b) |
+| PullhausMarketplace | [`0xA2cBb0212e60135B7441E138FB7204B921C8B83c`](https://testnet.bscscan.com/address/0xA2cBb0212e60135B7441E138FB7204B921C8B83c) |
+| PullhausForge | [`0xe8cAa7960Da8F20dBB3c4cf91e3123a9A6819911`](https://testnet.bscscan.com/address/0xe8cAa7960Da8F20dBB3c4cf91e3123a9A6819911) |
+
+- First deploy block: `144105973` (Railway `INDEX_FROM_BLOCK`).
+- Admin (`DEFAULT_ADMIN_ROLE` on every game contract) and treasury: company wallet `0x32CeB2b3564437038b031d1F1EE16e6AcD3aDFD4`.
+- Keeper and indexer: `0xae1529CC620d1Ada515d4365d17705db7Cf045fa`, a testnet-only hot wallet. It owns the mock coordinator, holds `INDEXER_ROLE` on PullhausCards, and holds no admin role. Its key lives only in Railway `KEEPER_PRIVATE_KEY`.
+- Testnet tiers: 100 / 300 / 800 / 2,000 PULL. The Mythic forge burn is 500 PULL. Reward epochs last 1 day. When an epoch ends, anyone can call `finalizeEpoch`, and the admin wallet starts the next one from the admin page (`startEpoch`).
+- Railway uses `RPC_URL=https://bsc-testnet-rpc.publicnode.com`, `CHAIN_ID=97`, `MOCK_VRF=true`, and `MOCK_TOKEN=true`.
+- On Vercel, the site defaults wallets to BSC testnet in production. Set `NEXT_PUBLIC_CHAIN_ID` to override that, for example `56` at mainnet launch.
+
+Redeploy command (secrets come from your shell, never from git):
+
+```bash
+cd contracts
+ADMIN_ADDRESS=0x32Ce... TREASURY_ADDRESS=0x32Ce... KEEPER_ADDRESS=<keeper> INDEXER_ADDRESS=<keeper> \
+ALLOW_MOCK_VRF=true BASE_URI=https://pullhaus-api-production.up.railway.app/metadata/ \
+TIER1=100000000000000000000 TIER2=300000000000000000000 TIER3=800000000000000000000 TIER4=2000000000000000000000 \
+MYTHIC_BURN=500000000000000000000 EPOCH_DURATION=86400 DEPLOYER_PRIVATE_KEY=<from your secret store> \
+forge script script/Deploy.s.sol:Deploy --rpc-url https://bsc-testnet-rpc.publicnode.com --broadcast --legacy --with-gas-price 1000000000 --slow
+```
+
+The script writes `deployments/local.json`. Copy the result to `deployments/bsc-testnet.json`, set `blockNumber` to the first receipt block, and restore `local.json`.
