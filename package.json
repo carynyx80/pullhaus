@@ -1,0 +1,22 @@
+{
+  "name": "pullhaus",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "bash scripts/dev.sh",
+    "dev:apps": "concurrently -n api,web -c blue,magenta \"pnpm --filter @pullhaus/backend dev\" \"pnpm --filter @pullhaus/web dev\"",
+    "test": "pnpm --filter @pullhaus/shared test && forge test --root contracts --no-dynamic-test-linking",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "lint": "pnpm -r --if-present lint",
+    "build": "pnpm --filter @pullhaus/backend build && pnpm --filter @pullhaus/web build"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["prisma", "@prisma/client", "@prisma/engines", "esbuild", "bufferutil", "utf-8-validate", "keccak", "msgpackr-extract", "sharp"]
+  }
+}

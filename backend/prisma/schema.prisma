@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Cursor {
+  id    Int @id @default(1)
+  block Int @default(0)
+}
+
+model CardRecord {
+  tokenId    String   @id
+  owner      String
+  burned     Boolean  @default(false)
+  revealed   Boolean  @default(false)
+  rarity     Int?
+  level      Int      @default(1)
+  element    Int?
+  atk        Int?
+  def        Int?
+  spd        Int?
+  ability    Int?
+  setId      Int?
+  seed       String?
+  name       String?
+  lore       String?
+  imageUrl   String?
+  commitment String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([owner])
+}
+
+model ListingRecord {
+  tokenId String  @id
+  seller  String
+  price   String
+  active  Boolean @default(true)
+}
+
+model WalletStat {
+  address        String @id
+  lifetimePoints String @default("0")
+  tier           Int    @default(0)
+}
+
+model SeasonScore {
+  season  Int
+  address String
+  points  String @default("0")
+
+  @@id([season, address])
+}
+
+model EpochRecord {
+  id          Int     @id
+  start       Int
+  end         Int
+  pool        String
+  totalPoints String  @default("0")
+  finalized   Boolean @default(false)
+}
+
+model BattleRecord {
+  id         String   @id @default(cuid())
+  attackerId String
+  defenderId String
+  winnerId   String
+  scoreA     Int
+  scoreB     Int
+  rounds     Json
+  narration  String
+  createdAt  DateTime @default(now())
+}
+
+model Nonce {
+  id        String   @id
+  createdAt DateTime @default(now())
+}
+
+model ProcessedLog {
+  id String @id
+}

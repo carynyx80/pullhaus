@@ -1,0 +1,17 @@
+node_modules
+dist
+.next
+out
+coverage
+.env
+.env.local
+.env.*.local
+backend/storage
+contracts/out
+contracts/cache
+contracts/broadcast
+contracts/lib
+*.log
+.DS_Store
+.vercel
+tsconfig.tsbuildinfo
