@@ -1,32 +1,43 @@
 import type { Metadata, Viewport } from "next";
-import { Big_Shoulders, Fraunces, JetBrains_Mono, Outfit } from "next/font/google";
+import localFont from "next/font/local";
 import { Providers } from "@/components/providers";
 import "./globals.css";
 
-const display = Big_Shoulders({
-  subsets: ["latin"],
+// Latin woff2 files live in src/fonts. The build does not call Google Fonts.
+const display = localFont({
+  src: [
+    { path: "../fonts/BigShoulders-500.woff2", weight: "500", style: "normal" },
+    { path: "../fonts/BigShoulders-700.woff2", weight: "700", style: "normal" },
+    { path: "../fonts/BigShoulders-800.woff2", weight: "800", style: "normal" },
+  ],
   variable: "--font-display-face",
-  weight: ["500", "700", "800"],
   display: "swap",
-  adjustFontFallback: false,
 });
-const serif = Fraunces({
-  subsets: ["latin"],
+const serif = localFont({
+  src: [
+    { path: "../fonts/Fraunces-500.woff2", weight: "500", style: "normal" },
+    { path: "../fonts/Fraunces-500-italic.woff2", weight: "500", style: "italic" },
+    { path: "../fonts/Fraunces-600.woff2", weight: "600", style: "normal" },
+    { path: "../fonts/Fraunces-700.woff2", weight: "700", style: "normal" },
+  ],
   variable: "--font-serif-face",
-  weight: ["500", "600", "700"],
-  style: ["normal", "italic"],
   display: "swap",
 });
-const sans = Outfit({
-  subsets: ["latin"],
+const sans = localFont({
+  src: [
+    { path: "../fonts/Outfit-400.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/Outfit-500.woff2", weight: "500", style: "normal" },
+    { path: "../fonts/Outfit-600.woff2", weight: "600", style: "normal" },
+  ],
   variable: "--font-sans-face",
-  weight: ["400", "500", "600"],
   display: "swap",
 });
-const mono = JetBrains_Mono({
-  subsets: ["latin"],
+const mono = localFont({
+  src: [
+    { path: "../fonts/JetBrainsMono-400.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/JetBrainsMono-500.woff2", weight: "500", style: "normal" },
+  ],
   variable: "--font-mono-face",
-  weight: ["400", "500"],
   display: "swap",
 });
 
