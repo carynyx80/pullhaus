@@ -4,6 +4,7 @@ import { abis, RARITIES } from "@pullhaus/shared";
 import { AnimatePresence, motion } from "framer-motion";
 import { parseEventLogs, maxUint256, type Abi } from "viem";
 import { useAccount, usePublicClient, useReadContract, useReadContracts } from "wagmi";
+import Link from "next/link";
 import { useState } from "react";
 import { CardView } from "@/components/card-view";
 import { Button } from "@/components/ui/button";
@@ -84,6 +85,17 @@ export default function PacksPage() {
     setPhase({ stage: "flip", card: { ...card, revealed: true } });
   }
 
+  const prices = ids.flatMap((_, index) => {
+    const row: any = packs.data?.[index]?.result;
+    if (!row) return [];
+    const active = Boolean(row.active ?? row[7]);
+    const price = BigInt(row.price ?? row[1] ?? 0);
+    return active && price > 0n ? [price] : [];
+  });
+  const cheapest = prices.length > 0 ? prices.reduce((low, price) => (price < low ? price : low)) : null;
+  const held = typeof balance.data === "bigint" ? balance.data : null;
+  const shortOnPull = Boolean(address && held !== null && cheapest !== null && held < cheapest);
+
   return (
     <section className="mx-auto max-w-6xl px-4 py-14">
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -95,14 +107,22 @@ export default function PacksPage() {
         <div className="text-right">
           <p className="text-sm text-muted">Your $PULL</p>
           <p className="font-display text-4xl">{pull(balance.data as bigint)}</p>
-          {deployment.mockToken && address && (
+          {deployment.mockToken && address ? (
             <Button className="mt-2" variant="outline" size="sm" onClick={faucet}>
               Faucet
             </Button>
-          )}
+          ) : null}
         </div>
       </div>
-      {!address && <p className="mt-8 text-muted">Connect a wallet to open a pack.</p>}
+      {shortOnPull ? (
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-[28px] border border-gold/40 bg-gold/10 px-5 py-4">
+          <p className="text-sm text-muted">Your balance is below the smallest pack. Get $PULL before the next burn.</p>
+          <Button asChild size="sm" variant="outline">
+            <Link href="/swap">Get $PULL</Link>
+          </Button>
+        </div>
+      ) : null}
+      {!address ? <p className="mt-8 text-muted">Connect a wallet to open a pack.</p> : null}
       <div className="mt-10 grid gap-4 md:grid-cols-2">
         {ids.map((id, index) => {
           const row: any = packs.data?.[index]?.result;
