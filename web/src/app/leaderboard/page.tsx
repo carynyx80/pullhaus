@@ -32,7 +32,7 @@ export default function LeaderboardPage() {
             <span className="text-gold">#{row.rank}</span>
             <span>{short(row.address)}</span>
             <span className="text-muted">{TIERS[row.tier]?.name}</span>
-            <span className="font-display text-2xl">{pull(row.points)}</span>
+            <span className="font-mono text-xl">{pull(row.points)}</span>
           </li>
         ))}
       </ol>

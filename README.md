@@ -42,7 +42,7 @@ Foundry covers burn math, the VRF mock, commit-reveal, pro-rata claims, fusion, 
 | backend | `backend/.env.example` |
 | web | `web/.env.example` |
 
-Leave `PULL_TOKEN` empty locally and the deploy script creates MockPULL. Point it at the real BEP-20 when you have one. `PULL_BURN_TO_DEAD=true` sends the burn leg to `0x000…dEaD` for tokens that have no `burn(uint256)`.
+Leave `PULL_TOKEN` empty locally and the deploy script creates MockPULL. Point it at the real BEP-20 when you have one. The mainnet token launches on [Flap.sh](https://flap.sh). `LAUNCHPAD_URL` and `NEXT_PUBLIC_LAUNCHPAD_URL` default to `https://flap.sh`. `PULL_BURN_TO_DEAD=true` sends the burn leg to `0x000…dEaD` for tokens that have no `burn(uint256)`.
 
 `OPENAI_API_KEY` is optional. Without it, cards use procedural SVG and template lore, and battles use the fallback narrator. `MEDIA_DRIVER` is `local`, `s3`, or `greenfield`.
 

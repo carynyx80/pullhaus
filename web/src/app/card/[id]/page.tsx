@@ -79,7 +79,7 @@ function Stat({ label, value }: { label: string; value: number }) {
   return (
     <div className="glass rounded-2xl p-3">
       <dt className="text-xs uppercase tracking-[0.16em] text-muted">{label}</dt>
-      <dd className="font-display text-3xl">{value}</dd>
+      <dd className="font-mono text-3xl">{value}</dd>
     </div>
   );
 }

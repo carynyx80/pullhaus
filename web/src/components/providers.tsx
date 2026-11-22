@@ -11,12 +11,14 @@ import { defaultChain } from "@/lib/chains";
 import { HouseProvider } from "@/lib/house";
 import { wagmiConfig } from "@/lib/wagmi";
 import { AgeGate } from "./age-gate";
+import { CursorGlow } from "./cursor-glow";
 import { Shell } from "./shell";
 
 const queryClient = new QueryClient();
 
 export function Providers({ children }: { children: React.ReactNode }) {
   useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const lenis = new Lenis({ duration: 1.05, smoothWheel: true });
     let frame = 0;
     const loop = (time: number) => {
@@ -32,8 +34,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider theme={darkTheme({ accentColor: "#e6b17a", accentColorForeground: "#24170f", borderRadius: "large" })} initialChain={defaultChain}>
+        <RainbowKitProvider theme={darkTheme({ accentColor: "#ff7a45", accentColorForeground: "#2a100b", borderRadius: "large" })} initialChain={defaultChain}>
           <HouseProvider>
+            <CursorGlow />
             <AgeGate />
             <Shell>{children}</Shell>
             <Toaster theme="dark" />

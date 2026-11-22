@@ -1,0 +1,6 @@
+Latin woff2 subsets used by next/font/local in src/app/layout.tsx.
+
+Big Shoulders, Fraunces, and Outfit are copyright Google Inc.
+JetBrains Mono is copyright JetBrains.
+All four are licensed under the SIL Open Font License 1.1 (OFL.txt).
+The files are the Fontsource latin subsets of those families.

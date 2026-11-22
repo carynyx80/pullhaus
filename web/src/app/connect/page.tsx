@@ -2,6 +2,7 @@
 
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useConnect } from "wagmi";
+import { Mark } from "@/components/mark";
 import { Button } from "@/components/ui/button";
 
 export default function ConnectPage() {
@@ -9,7 +10,8 @@ export default function ConnectPage() {
   const dev = process.env.NEXT_PUBLIC_DEV_WALLET === "true";
   return (
     <section className="mx-auto max-w-3xl px-4 py-16">
-      <p className="text-xs uppercase tracking-[0.22em] text-gold">Wallets</p>
+      <Mark size={72} />
+      <p className="mt-6 font-mono text-[11px] uppercase tracking-[0.32em] text-gold">Wallets</p>
       <h1 className="mt-3 font-display text-5xl sm:text-6xl">Come in with a key.</h1>
       <p className="mt-4 max-w-xl text-muted">
         Pullhaus speaks BNB Chain, BNB testnet, opBNB, and a local Anvil chain. A wallet signature later opens your private inventory. It does not spend tokens by itself.

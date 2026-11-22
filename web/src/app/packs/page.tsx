@@ -1,7 +1,8 @@
 "use client";
 
-import { abis, RARITIES } from "@pullhaus/shared";
-import { AnimatePresence, motion } from "framer-motion";
+import { abis, RARITIES, RARITY_COLORS } from "@pullhaus/shared";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import Image from "next/image";
 import { parseEventLogs, maxUint256, type Abi } from "viem";
 import { useAccount, usePublicClient, useReadContract, useReadContracts } from "wagmi";
 import Link from "next/link";
@@ -9,6 +10,7 @@ import { useState } from "react";
 import { CardView } from "@/components/card-view";
 import { Button } from "@/components/ui/button";
 import { toDisplay, type DisplayCard } from "@/lib/cards";
+import { SPECIMENS } from "@/lib/specimens";
 import { isDeployed, useHouse } from "@/lib/house";
 import { useSend } from "@/lib/tx";
 import { pull } from "@/lib/utils";
@@ -16,12 +18,14 @@ import { pull } from "@/lib/utils";
 type Phase = { stage: "idle" } | { stage: "shake"; name: string } | { stage: "fan"; cards: DisplayCard[] } | { stage: "flip"; card: DisplayCard };
 
 export default function PacksPage() {
+  const reduce = useReducedMotion();
   const { deployment } = useHouse();
   const { address } = useAccount();
   const client = usePublicClient();
   const send = useSend();
   const ready = isDeployed(deployment);
   const [phase, setPhase] = useState<Phase>({ stage: "idle" });
+  const [preview, setPreview] = useState(false);
   const idQuery = useReadContract({
     address: deployment.packs,
     abi: abis.packs as Abi,
@@ -79,7 +83,23 @@ export default function PacksPage() {
     balance.refetch();
   }
 
+  async function previewTear() {
+    setPreview(true);
+    setPhase({ stage: "shake", name: "Specimen" });
+    await new Promise((resolve) => setTimeout(resolve, reduce ? 0 : 1100));
+    setPhase({ stage: "fan", cards: SPECIMENS.map((card) => ({ ...card, revealed: false })) });
+  }
+
+  function closeCeremony() {
+    setPreview(false);
+    setPhase({ stage: "idle" });
+  }
+
   async function reveal(card: DisplayCard) {
+    if (preview) {
+      setPhase({ stage: "flip", card: { ...card, revealed: true } });
+      return;
+    }
     setPhase({ stage: "flip", card });
     await send("Revealing the card", { address: deployment.cards, abi: abis.cards as Abi, functionName: "reveal", args: [BigInt(card.tokenId)] });
     setPhase({ stage: "flip", card: { ...card, revealed: true } });
@@ -97,21 +117,25 @@ export default function PacksPage() {
   const shortOnPull = Boolean(address && held !== null && cheapest !== null && held < cheapest);
 
   return (
-    <section className="mx-auto max-w-6xl px-4 py-14">
+    <section className="mx-auto max-w-6xl px-4 py-16">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.22em] text-gold">Packs</p>
-          <h1 className="mt-2 font-display text-5xl">Pay in ash.</h1>
+          <p className="font-mono text-[11px] uppercase tracking-[0.32em] text-gold">Packs</p>
+          <h1 className="mt-3 font-display text-6xl sm:text-8xl">Pay in ash.</h1>
           <p className="mt-3 max-w-xl text-muted">Half the price is burned. Thirty percent feeds the epoch pool. The card stays sealed until you reveal it.</p>
         </div>
         <div className="text-right">
           <p className="text-sm text-muted">Your $PULL</p>
-          <p className="font-display text-4xl">{pull(balance.data as bigint)}</p>
+          <p className="font-mono text-4xl">{pull(balance.data as bigint)}</p>
           {deployment.mockToken && address ? (
             <Button className="mt-2" variant="outline" size="sm" onClick={faucet}>
               Faucet
             </Button>
           ) : null}
+          <Button className="mt-2" variant="outline" size="sm" onClick={() => void previewTear()}>
+            Preview the tear
+          </Button>
+          <p className="mt-2 text-xs text-muted">Specimen. Does not burn.</p>
         </div>
       </div>
       {shortOnPull ? (
@@ -132,8 +156,9 @@ export default function PacksPage() {
           const count = Number(row.count ?? row[2]);
           const minTier = Number(row.minTier ?? row[4]);
           return (
-            <article key={id.toString()} className="glass rounded-[28px] p-6">
-              <p className="text-xs uppercase tracking-[0.18em] text-gold">{count === 1 ? "Single" : `${count} cards`}</p>
+            <article key={id.toString()} className="glass group relative overflow-hidden rounded-[28px] p-6">
+              <Image src="/brand/mark.png" alt="" width={160} height={160} className="pointer-events-none absolute -right-6 -top-8 size-36 opacity-90 motion-safe:transition motion-safe:duration-500 motion-safe:group-hover:rotate-6" />
+              <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-gold">{count === 1 ? "Single" : `${count} cards`}</p>
               <h2 className="mt-2 font-display text-4xl">{name}</h2>
               <p className="mt-2 text-muted">{pull(price)} $PULL {minTier > 0 ? `· tier ${minTier}` : ""}</p>
               <Button className="mt-6" disabled={!address} onClick={() => openPack(index)}>
@@ -145,42 +170,63 @@ export default function PacksPage() {
       </div>
       <AnimatePresence>
         {phase.stage !== "idle" && (
-          <motion.div className="fixed inset-0 z-[60] grid place-items-center bg-[#070604]/88 px-4 backdrop-blur-md" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <motion.div className="fixed inset-0 z-[60] grid place-items-center overflow-y-auto bg-[#070605]/92 px-4 py-10 backdrop-blur-md" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            {phase.stage === "fan" && !reduce ? (
+              <motion.div aria-hidden className="pointer-events-none absolute inset-0 bg-[#fff6ee]" initial={{ opacity: 0.92 }} animate={{ opacity: 0 }} transition={{ duration: 0.55 }} />
+            ) : null}
             {phase.stage === "shake" && (
-              <div className="text-center">
-                <div className="pack-shake mx-auto h-72 w-48 rounded-[28px] border border-gold/50 bg-gradient-to-b from-[#3a2418] to-[#120e0c] shadow-[0_0_80px_rgba(255,106,61,0.45)]" />
-                <div className="relative mx-auto mt-[-40px] h-10 w-40">
+              <div className="relative text-center">
+                <div className={`${reduce ? "" : "pack-shake"} relative mx-auto aspect-[3/4.15] w-52`}>
+                  <div className="pack-face absolute inset-0 overflow-hidden rounded-[28px] shadow-[0_0_90px_rgba(255,122,69,0.55)]">
+                    <div className="pack-crimp absolute inset-x-3 top-3 h-2.5" />
+                    <div className="pack-crimp absolute inset-x-3 bottom-3 h-2.5" />
+                    <Image src="/brand/logo.png" alt="" width={280} height={280} className="absolute left-1/2 top-[46%] w-[78%] -translate-x-1/2 -translate-y-1/2" />
+                  </div>
+                </div>
+                <div className="relative mx-auto mt-4 h-10 w-40">
                   {Array.from({ length: 8 }).map((_, i) => (
                     <span key={i} className="ember-bit absolute bottom-0 size-2 rounded-full bg-ember" style={{ left: `${i * 12}%`, animationDelay: `${i * 0.15}s` }} />
                   ))}
                 </div>
-                <p className="mt-6 font-display text-3xl">The ash is leaving.</p>
+                <p className="mt-6 font-display text-5xl">The ash is leaving.</p>
                 <p className="text-muted">{phase.name}</p>
               </div>
             )}
             {phase.stage === "fan" && (
-              <div className="max-w-5xl text-center">
-                <p className="text-xs uppercase tracking-[0.22em] text-gold">Sealed</p>
-                <div className="mt-6 flex flex-wrap justify-center gap-4">
+              <div className="relative max-w-5xl text-center">
+                <p className="font-mono text-[11px] uppercase tracking-[0.32em] text-gold">Sealed</p>
+                <h2 className="mt-3 font-display text-6xl">The pull.</h2>
+                <div className="mt-8 flex flex-wrap justify-center gap-4">
                   {phase.cards.map((card) => (
-                    <button key={card.tokenId} className="w-40 text-left sm:w-48" onClick={() => reveal(card)}>
+                    <button key={card.tokenId} className="w-40 text-left sm:w-48" style={{ filter: `drop-shadow(0 18px 28px ${RARITY_COLORS[card.rarity]}88)` }} onClick={() => reveal(card)}>
                       <CardView card={{ ...card, revealed: false }} />
                     </button>
                   ))}
                 </div>
-                <Button className="mt-8" variant="outline" onClick={() => setPhase({ stage: "idle" })}>
+                <p className="mt-4 text-sm text-muted">{preview ? "Specimen tear. Nothing was burned." : "Tap a seal to reveal it."}</p>
+                <Button className="mt-6" variant="outline" onClick={closeCeremony}>
                   Keep them sealed
                 </Button>
               </div>
             )}
             {phase.stage === "flip" && (
-              <div className="text-center">
-                <motion.div initial={{ rotateY: 180 }} animate={{ rotateY: 0 }} transition={{ duration: 0.8 }} className="mx-auto w-64">
+              <div className="relative text-center">
+                {!reduce ? (
+                  <motion.div
+                    aria-hidden
+                    className="pointer-events-none absolute -inset-24 rounded-full blur-3xl"
+                    style={{ background: RARITY_COLORS[phase.card.rarity] }}
+                    initial={{ opacity: 0.75 }}
+                    animate={{ opacity: 0.2 }}
+                  />
+                ) : null}
+                <motion.div initial={reduce ? false : { rotateY: 180, scale: 0.86 }} animate={{ rotateY: 0, scale: 1 }} transition={{ duration: reduce ? 0 : 0.8 }} className="relative mx-auto w-64" style={{ transformStyle: "preserve-3d" }}>
                   <CardView card={phase.card} face />
                 </motion.div>
-                <p className="mt-4 font-display text-3xl">{phase.card.name}</p>
-                <p className="text-gold">{RARITIES[phase.card.rarity]}</p>
-                <Button className="mt-6" onClick={() => setPhase({ stage: "idle" })}>
+                <p className="mt-4 font-display text-5xl">{phase.card.revealed ? phase.card.name : "Still sealed"}</p>
+                <p className="font-mono text-sm uppercase tracking-[0.22em] text-gold">{RARITIES[phase.card.rarity]}</p>
+                {preview ? <p className="mt-2 text-sm text-muted">Preview. Nothing was burned. Stats come from the card math.</p> : null}
+                <Button className="mt-6" onClick={closeCeremony}>
                   Done
                 </Button>
               </div>

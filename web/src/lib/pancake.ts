@@ -20,10 +20,15 @@ import {
  * USDC `0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d`: name "USD Coin", symbol USDC, 18 decimals.
  * The nearby address ending in `970B32Cd580` has no contract code, so it is not used.
  *
- * V2 is the pool four.meme adds when a token finishes its bonding curve
- * (PancakeSwap V2 migration, four.meme product update 2025-03-31).
+ * Flap.sh (docs.flap.sh): a token trades on the Portal bonding curve until 80% of
+ * supply is sold, then migrates. Tax tokens (address ends in 7777) migrate to a
+ * PancakeSwap V2 pool. Non-tax tokens (address ends in 8888) migrate to a
+ * PancakeSwap Infinity CL pool. This desk calls the V2 router only after
+ * factory.getPair and pair.getReserves show liquidity on both sides.
+ * V2 factory `0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73`.
  */
 export const PANCAKE_V2_ROUTER = getAddress("0x10ED43C718714eb63d5aA57B78B54704E256024E");
+export const PANCAKE_V2_FACTORY = getAddress("0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73");
 export const BSC_USDT = getAddress("0x55d398326f99059fF775485246999027B3197955");
 export const BSC_USDC = getAddress("0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d");
 
@@ -80,6 +85,33 @@ export const routerAbi = [
   },
 ] as const;
 
+export const factoryAbi = [
+  {
+    type: "function",
+    name: "getPair",
+    stateMutability: "view",
+    inputs: [
+      { name: "tokenA", type: "address" },
+      { name: "tokenB", type: "address" },
+    ],
+    outputs: [{ name: "pair", type: "address" }],
+  },
+] as const;
+
+export const pairAbi = [
+  {
+    type: "function",
+    name: "getReserves",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [
+      { name: "reserve0", type: "uint112" },
+      { name: "reserve1", type: "uint112" },
+      { name: "blockTimestampLast", type: "uint32" },
+    ],
+  },
+] as const;
+
 export const payTokens = [
   { id: "bnb", symbol: "BNB", address: null, blurb: "Native coin" },
   { id: "usdt", symbol: "USDT", address: BSC_USDT, blurb: "Binance-Peg Tether" },
@@ -113,10 +145,10 @@ export function readConfiguredUrl(raw: string | undefined, fallback: string): { 
   if (!value) return { url: fallback, error: null };
   try {
     const url = new URL(value);
-    if (url.protocol !== "https:") return { url: fallback, error: "The four.meme link must start with https." };
+    if (url.protocol !== "https:") return { url: fallback, error: "The launchpad link must start with https." };
     return { url: url.toString(), error: null };
   } catch {
-    return { url: fallback, error: "The four.meme link is not a valid URL." };
+    return { url: fallback, error: "The launchpad link is not a valid URL." };
   }
 }
 
@@ -271,6 +303,58 @@ export async function quoteBest(client: Reader, amountIn: bigint, tokenIn: Addre
     }
   }
   return { ok: true, amountOut: best.out, path: best.path, impactBps };
+}
+
+export async function pairHasLiquidity(
+  client: Reader,
+  tokenA: Address,
+  tokenB: Address,
+): Promise<{ ok: true; liquid: boolean } | { ok: false; reason: "rpc" }> {
+  if (tokenA.toLowerCase() === tokenB.toLowerCase()) return { ok: true, liquid: false };
+  try {
+    const pair = (await client.readContract({
+      address: PANCAKE_V2_FACTORY,
+      abi: factoryAbi,
+      functionName: "getPair",
+      args: [tokenA, tokenB],
+    })) as Address;
+    if (!pair || pair.toLowerCase() === zeroAddress.toLowerCase()) return { ok: true, liquid: false };
+    const reserves = (await client.readContract({
+      address: pair,
+      abi: pairAbi,
+      functionName: "getReserves",
+    })) as readonly [bigint, bigint, number];
+    return { ok: true, liquid: reserves[0] > 0n && reserves[1] > 0n };
+  } catch {
+    return { ok: false, reason: "rpc" };
+  }
+}
+
+/** True only when the direct pair, or the two-hop route through WBNB, holds reserves on both sides. */
+export async function v2RouteReady(
+  client: Reader,
+  tokenIn: Address | null,
+  pull: Address,
+): Promise<{ ok: true; liquid: boolean } | { ok: false; reason: "rpc" }> {
+  let wbnb: Address;
+  try {
+    wbnb = (await client.readContract({
+      address: PANCAKE_V2_ROUTER,
+      abi: routerAbi,
+      functionName: "WETH",
+    })) as Address;
+  } catch {
+    return { ok: false, reason: "rpc" };
+  }
+  const start = tokenIn ?? wbnb;
+  const direct = await pairHasLiquidity(client, start, pull);
+  if (!direct.ok) return direct;
+  if (direct.liquid) return direct;
+  if (start.toLowerCase() === wbnb.toLowerCase()) return { ok: true, liquid: false };
+  const toWbnb = await pairHasLiquidity(client, start, wbnb);
+  if (!toWbnb.ok) return toWbnb;
+  if (!toWbnb.liquid) return { ok: true, liquid: false };
+  return pairHasLiquidity(client, wbnb, pull);
 }
 
 export function swapError(error: unknown) {

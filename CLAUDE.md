@@ -74,7 +74,7 @@ Copy talks about points and perks. Do not describe the epoch claim as wages, yie
 ## What's next
 
 - Phase 2 ZK rarity proofs (`docs/zk-phase2.md`). Until then, do not claim the sealed state is cryptographically private.
-- A real `$PULL` address from four.meme / PancakeSwap, a funded VRF subscription, and `forge script` against BSC testnet.
+- A real `$PULL` address from Flap.sh / PancakeSwap, a funded VRF subscription, and `forge script` against BSC testnet.
 - Greenfield needs a live bucket and the JS SDK installed; the adapter is written and falls back locally.
 - WalletConnect project id, if the RainbowKit modal should include WalletConnect. Injected wallets already work.
 - Multisig admin. The deployer holds `DEFAULT_ADMIN_ROLE`.
