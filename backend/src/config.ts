@@ -44,7 +44,7 @@ export const config = {
     .map((s) => s.trim().toUpperCase())
     .filter(Boolean),
   pullTrade: optionalAddress("PULL_TRADE_ADDRESS"),
-  fourMemeUrl: optionalHttps("FOUR_MEME_URL", "https://four.meme"),
+  launchpadUrl: optionalHttps("LAUNCHPAD_URL", "https://flap.sh"),
 };
 
 function optionalAddress(name: string): Address | null {

@@ -13,7 +13,7 @@ export function SheetContent({ className, ...props }: ComponentProps<typeof Dial
     <DialogPrimitive.Portal>
       <DialogPrimitive.Overlay className="fixed inset-0 z-[70] bg-black/60" />
       <DialogPrimitive.Content
-        className={cn("fixed inset-y-0 right-0 z-[80] w-[min(86vw,360px)] border-l border-line bg-[#161310] p-6", className)}
+        className={cn("fixed inset-y-0 right-0 z-[80] w-[min(88vw,420px)] border-l border-line bg-[#0c0a09] p-6", className)}
         {...props}
       />
     </DialogPrimitive.Portal>

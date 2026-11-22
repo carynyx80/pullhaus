@@ -79,7 +79,7 @@ app.get("/config", async () => ({
   publicUrl: config.publicUrl,
   wsUrl: config.publicUrl.replace(/^http/, "ws") + "/ws",
   pullTrade: config.pullTrade,
-  fourMemeUrl: config.fourMemeUrl,
+  launchpadUrl: config.launchpadUrl,
 }));
 
 app.get("/auth/nonce", async () => ({ nonce: await issueNonce() }));

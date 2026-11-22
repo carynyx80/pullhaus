@@ -1,22 +1,24 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #100e0c;
-  --ink: #f6efe4;
-  --muted: #b5a89a;
-  --gold: #e6b17a;
-  --ember: #ff6a3d;
-  --line: rgba(246, 239, 228, 0.14);
-  --common: #c9c1b6;
-  --rare: #7eb6d6;
-  --epic: #c4b5fd;
-  --legendary: #e6b17a;
-  --mythic: #ff5d8f;
+  --bg: #070605;
+  --ink: #f7efe6;
+  --muted: #b7a89a;
+  --gold: #f0c7a4;
+  --ember: #ff7a45;
+  --line: rgba(247, 228, 210, 0.16);
+  --common: #d9d0c5;
+  --rare: #8fd0e6;
+  --epic: #d7c4ff;
+  --legendary: #f0c7a4;
+  --mythic: #ff6d9a;
 }
 
 @theme inline {
-  --font-sans: var(--font-outfit), "Outfit", sans-serif;
-  --font-display: var(--font-fraunces), "Fraunces", serif;
+  --font-sans: var(--font-sans-face), "Outfit", sans-serif;
+  --font-display: var(--font-display-face), "Big Shoulders", sans-serif;
+  --font-serif: var(--font-serif-face), "Fraunces", serif;
+  --font-mono: var(--font-mono-face), "JetBrains Mono", ui-monospace, monospace;
   --color-bg: var(--bg);
   --color-ink: var(--ink);
   --color-muted: var(--muted);
@@ -27,9 +29,12 @@
 
 html { scroll-behavior: auto; }
 body {
-  background: var(--bg);
+  background:
+    radial-gradient(980px 520px at 88% -12%, rgba(255, 122, 69, 0.2), transparent 58%),
+    radial-gradient(720px 480px at -12% 8%, rgba(240, 199, 164, 0.08), transparent 52%),
+    var(--bg);
   color: var(--ink);
-  font-family: var(--font-outfit), sans-serif;
+  font-family: var(--font-sans), sans-serif;
   min-height: 100vh;
 }
 body::before {
@@ -37,22 +42,60 @@ body::before {
   pointer-events: none;
   position: fixed;
   inset: 0;
-  z-index: 80;
-  opacity: 0.18;
+  z-index: 30;
+  opacity: 0.16;
   mix-blend-mode: overlay;
-  background-image: radial-gradient(rgba(246, 239, 228, 0.18) 0.6px, transparent 0.6px);
-  background-size: 3px 3px;
+  background-image: url("/brand/noise.svg");
+  background-size: 180px 180px;
 }
-::selection { background: #e6b17a; color: #1a120c; }
+::selection { background: #ff8a55; color: #1a100c; }
+
+h1.font-display,
+h2.font-display {
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 0.86;
+  text-transform: uppercase;
+}
+h3.font-display {
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 0.95;
+}
 
 .glass {
-  background: linear-gradient(180deg, rgba(246, 239, 228, 0.08), rgba(246, 239, 228, 0.03));
+  background: linear-gradient(180deg, rgba(255, 236, 220, 0.09), rgba(255, 236, 220, 0.03));
   border: 1px solid var(--line);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 24px 70px rgba(0, 0, 0, 0.28);
   backdrop-filter: blur(18px);
 }
-.hairline { background: linear-gradient(90deg, transparent, rgba(230, 177, 122, 0.7), transparent); }
+.hairline { background: linear-gradient(90deg, transparent, rgba(240, 199, 164, 0.85), transparent); }
 
+.foil-text {
+  background: linear-gradient(100deg, #ffb089 0%, #fff6ee 18%, #ff7a45 42%, #ffe1c2 58%, #9fd7ff 74%, #ffb089 100%);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: foil 9s linear infinite;
+}
+
+.pack-face {
+  background:
+    radial-gradient(90% 70% at 18% 0%, rgba(255, 255, 255, 0.55), transparent 42%),
+    linear-gradient(165deg, #fff1e4 0%, #ffc4a2 24%, #ff7a45 54%, #ffd0ae 78%, #fff8f2 100%);
+}
+.pack-crimp {
+  background: repeating-linear-gradient(90deg, #2a120c 0 8px, #ffe4d2 8px 11px, #2a120c 11px 16px);
+}
+
+.ticker-track { animation: ticker 36s linear infinite; }
+.ticker-track:hover { animation-play-state: paused; }
+
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
 @keyframes shake {
   0%, 100% { transform: rotate(0deg) translateY(0); }
   25% { transform: rotate(-2.4deg) translateY(-3px); }
@@ -78,6 +121,17 @@ body::before {
   animation: foil 3.5s linear infinite;
 }
 
+@media (hover: hover) and (pointer: fine) {
+  html.has-cursor,
+  html.has-cursor * { cursor: none !important; }
+  html.has-cursor input,
+  html.has-cursor textarea,
+  html.has-cursor select,
+  html.has-cursor option { cursor: text !important; }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .pack-shake, .ember-bit, .foil { animation: none; }
+  .pack-shake, .ember-bit, .foil, .foil-text, .ticker-track { animation: none; }
+  .ticker-track { width: auto; flex-wrap: wrap; white-space: normal; }
+  .ticker-track [aria-hidden="true"] { display: none; }
 }

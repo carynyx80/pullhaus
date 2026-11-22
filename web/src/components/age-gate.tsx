@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Mark } from "./mark";
 import { Button } from "./ui/button";
 
 export function AgeGate() {
@@ -10,9 +11,10 @@ export function AgeGate() {
   }, []);
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-[90] grid place-items-center bg-[#100e0c]/92 px-6 backdrop-blur-md">
+    <div className="fixed inset-0 z-[90] grid place-items-center bg-[#070605]/92 px-6 backdrop-blur-md">
       <div className="glass w-full max-w-md rounded-[32px] p-8">
-        <p className="text-xs uppercase tracking-[0.22em] text-gold">Before the door</p>
+        <Mark size={72} />
+        <p className="mt-5 font-mono text-[11px] uppercase tracking-[0.28em] text-gold">Before the door</p>
         <h2 className="mt-3 font-display text-4xl text-ink">This atelier is 18+.</h2>
         <p className="mt-4 text-sm leading-6 text-muted">
           Pullhaus is entertainment. Burn points are perks inside the game. They are not wages, not a promise of profit,

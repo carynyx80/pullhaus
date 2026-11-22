@@ -14,7 +14,7 @@ type HouseState = {
   refresh: () => void;
 };
 
-const emptyTrade: TradeHints = { pullToken: null, fourMemeUrl: "" };
+const emptyTrade: TradeHints = { pullToken: null, launchpadUrl: "" };
 
 const HouseContext = createContext<HouseState>({
   deployment: emptyDeployment(),

@@ -20,7 +20,7 @@ const STEPS = [
   {
     kicker: "01",
     title: "Buy $PULL",
-    body: "Swap BNB, USDT, or USDC on BNB Smart Chain. A token launched on four.meme can be bought here only after it migrates off the bonding curve onto PancakeSwap.",
+    body: "Swap BNB, USDT, or USDC on BNB Smart Chain once a PancakeSwap V2 pair has liquidity. Until then, $PULL is bought on Flap.sh, where it trades on a bonding curve. Tax tokens migrate to PancakeSwap V2. Non-tax tokens migrate to PancakeSwap Infinity.",
     href: "/swap",
     cta: "Open the swap desk",
   },
@@ -64,7 +64,7 @@ const STEPS = [
 const FAQ = [
   {
     q: "Where does $PULL come from?",
-    a: "On BNB Smart Chain it is bought through PancakeSwap, in this app or on pancakeswap.finance. The mainnet token has not launched, so the swap desk stays closed until an address is configured. A four.meme launch trades on PancakeSwap only after the bonding curve migrates. On BSC testnet the game uses MockPULL from a faucet, which is not the mainnet token.",
+    a: "On BNB Smart Chain it launches on Flap.sh. It trades on Flap's bonding curve until 80% of supply is sold, then migrates. Tax tokens, whose address ends in 7777, migrate to a PancakeSwap V2 pool. Non-tax tokens, whose address ends in 8888, migrate to a PancakeSwap Infinity CL pool. This app swaps through the V2 router only when a V2 pair with liquidity exists. Before that, buy on Flap. The mainnet token has not launched, so the swap desk stays on “Launching soon” until an address is configured. On BSC testnet the game uses MockPULL from a faucet, which is not the mainnet token.",
   },
   {
     q: "What happens to the tokens I spend?",

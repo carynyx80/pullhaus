@@ -29,11 +29,13 @@ import {
   plainAmount,
   quoteBest,
   routerAbi,
+  v2RouteReady,
   SLIPPAGE_PRESETS,
   SWAP_DEADLINE_SECONDS,
   swapError,
   type PayId,
 } from "@/lib/pancake";
+import { flapPoolKind, flapTokenPage, launchpadCta, poolStatusCopy } from "@/lib/launchpad";
 import { inputCurrency, networkLabel, resolveSwapMode } from "@/lib/trade";
 import { useSend } from "@/lib/tx";
 import { short } from "@/lib/utils";
@@ -43,37 +45,37 @@ export function SwapDesk() {
   const target = resolveSwapMode(deployment, trade);
   const showFaucet = target.mode === "faucet" || (target.mode === "swap" && deployment.mockToken && isDeployed(deployment));
   return (
-    <section className="mx-auto max-w-xl px-4 py-14">
-      <p className="text-xs uppercase tracking-[0.22em] text-gold">Swap</p>
-      <h1 className="mt-2 font-display text-5xl sm:text-6xl">Get $PULL.</h1>
+    <section className="mx-auto max-w-3xl px-4 py-16">
+      <p className="font-mono text-[11px] uppercase tracking-[0.32em] text-gold">Swap</p>
+      <h1 className="mt-3 font-display text-6xl sm:text-8xl">Get $PULL.</h1>
       <p className="mt-4 leading-7 text-muted">
-        BNB, USDT, or USDC on BNB Smart Chain, quoted and swapped through the PancakeSwap V2 router. A four.meme token trades there only after it leaves the bonding curve.
+        $PULL launches on Flap.sh. It trades on a bonding curve until 80% of supply is sold, then migrates to PancakeSwap. Tax tokens (address ending in 7777) move to a V2 pool. Non-tax tokens (address ending in 8888) move to an Infinity CL pool. This desk uses the V2 router only when a pair has liquidity.
       </p>
       {target.configError ? (
         <p className="mt-4 rounded-2xl border border-ember/50 bg-ember/10 px-4 py-3 text-sm" role="alert">
           {target.configError}
         </p>
       ) : null}
-      <div className="mt-8">
+      <div className="mt-8 max-w-xl">
         {target.mode === "swap" ? (
-          <SwapForm pullToken={target.pullToken} fourMemeUrl={target.fourMemeUrl} />
+          <SwapForm pullToken={target.pullToken} launchpadUrl={target.launchpadUrl} />
         ) : target.mode === "faucet" ? (
-          <FaucetCard chainId={target.chainId} fourMemeUrl={target.fourMemeUrl} />
+          <FaucetCard chainId={target.chainId} launchpadUrl={target.launchpadUrl} />
         ) : (
-          <SoonCard fourMemeUrl={target.fourMemeUrl} />
+          <SoonCard launchpadUrl={target.launchpadUrl} />
         )}
       </div>
       {target.mode === "swap" && showFaucet ? (
         <div className="mt-4">
-          <FaucetCard chainId={deployment.chainId} fourMemeUrl={target.fourMemeUrl} quiet />
+          <FaucetCard chainId={deployment.chainId} launchpadUrl={target.launchpadUrl} quiet />
         </div>
       ) : null}
-      <MigrationNote href={target.fourMemeUrl} />
+      <MigrationNote href={target.launchpadUrl} />
     </section>
   );
 }
 
-function SoonCard({ fourMemeUrl }: { fourMemeUrl: string }) {
+function SoonCard({ launchpadUrl }: { launchpadUrl: string }) {
   const reduce = useReducedMotion();
   return (
     <div className="glass relative overflow-hidden rounded-[32px] p-7 sm:p-8">
@@ -83,14 +85,14 @@ function SoonCard({ fourMemeUrl }: { fourMemeUrl: string }) {
         transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
       />
       <p className="text-xs uppercase tracking-[0.18em] text-gold">Mainnet token</p>
-      <h2 className="mt-3 font-display text-4xl leading-tight">Launching soon on four.meme.</h2>
+      <h2 className="mt-3 font-display text-6xl leading-none">Launching soon on Flap.sh.</h2>
       <p className="mt-4 leading-7 text-muted">
         No mainnet $PULL address is configured, so this desk will not quote a pool or send a swap. When the token is ready, set it in the site config and the swap form takes this place. Nothing here invents an address.
       </p>
       <div className="mt-6 flex flex-wrap gap-3">
         <Button asChild>
-          <a href={fourMemeUrl} target="_blank" rel="noreferrer">
-            Visit four.meme
+          <a href={launchpadUrl} target="_blank" rel="noreferrer">
+            {launchpadCta(launchpadUrl, false)}
           </a>
         </Button>
         <Button asChild variant="outline">
@@ -102,7 +104,7 @@ function SoonCard({ fourMemeUrl }: { fourMemeUrl: string }) {
   );
 }
 
-function FaucetCard({ chainId, fourMemeUrl, quiet = false }: { chainId: number; fourMemeUrl: string; quiet?: boolean }) {
+function FaucetCard({ chainId, launchpadUrl, quiet = false }: { chainId: number; launchpadUrl: string; quiet?: boolean }) {
   const { deployment } = useHouse();
   const { address } = useAccount();
   const send = useSend();
@@ -128,8 +130,8 @@ function FaucetCard({ chainId, fourMemeUrl, quiet = false }: { chainId: number; 
       {quiet ? null : (
         <p className="mt-5 text-sm text-muted">
           Mainnet $PULL is launching on{" "}
-          <a className="text-gold hover:text-ink" href={fourMemeUrl} target="_blank" rel="noreferrer">
-            four.meme
+          <a className="text-gold hover:text-ink" href={launchpadUrl} target="_blank" rel="noreferrer">
+            Flap.sh
           </a>
           . The swap form replaces this card once that address is set.
         </p>
@@ -143,14 +145,14 @@ function MigrationNote({ href }: { href: string }) {
     <p className="mt-6 text-sm leading-6 text-muted">
       A token launched on{" "}
       <a className="text-gold hover:text-ink" href={href} target="_blank" rel="noreferrer">
-        four.meme
+        Flap.sh
       </a>{" "}
-      only trades on PancakeSwap after it migrates off the bonding curve. Before that, transfers stay inside the launch contract and this router has no pool to quote.
+      trades on the bonding curve until 80% of supply is sold. Buys before that migration happen on Flap. Tax tokens, addresses ending in 7777, then move to a PancakeSwap V2 pool. Non-tax tokens, addresses ending in 8888, move to a PancakeSwap Infinity CL pool. This desk sends a V2 swap only after getPair shows a pool and getReserves shows liquidity.
     </p>
   );
 }
 
-function SwapForm({ pullToken, fourMemeUrl }: { pullToken: Address; fourMemeUrl: string }) {
+function SwapForm({ pullToken, launchpadUrl }: { pullToken: Address; launchpadUrl: string }) {
   const { address, chainId } = useAccount();
   const { switchChainAsync } = useSwitchChain();
   const { writeContractAsync } = useWriteContract();
@@ -165,6 +167,18 @@ function SwapForm({ pullToken, fourMemeUrl }: { pullToken: Address; fourMemeUrl:
   const [done, setDone] = useState<{ hash: `0x${string}`; received: bigint | null } | null>(null);
   const deferred = useDeferredValue(amount);
   const pay = payToken(payId);
+  const kind = flapPoolKind(pullToken);
+  const tokenPage = flapTokenPage(launchpadUrl, pullToken);
+  const pool = useQuery({
+    queryKey: ["v2-pool", payId, pullToken],
+    enabled: Boolean(client),
+    refetchInterval: 20_000,
+    queryFn: () => v2RouteReady(client!, pay.address, pullToken),
+  });
+  const liquid = pool.data?.ok === true && pool.data.liquid;
+  const checking = Boolean(client) && pool.isPending;
+  const poolUnread = !checking && (pool.data?.ok === false || !client);
+  const poolState = poolUnread ? "unread" : liquid ? "liquid" : "closed";
   const slippageBps = useCustom ? percentToBps(custom) : preset;
   const inputDecimalsQuery = useReadContract({
     chainId: bsc.id,
@@ -208,7 +222,7 @@ function SwapForm({ pullToken, fourMemeUrl }: { pullToken: Address; fourMemeUrl:
   const parsed = inputDecimals !== undefined ? parseAmount(deferred, inputDecimals) : null;
   const quote = useQuery({
     queryKey: ["pull-quote", payId, deferred, pullToken, String(inputDecimals)],
-    enabled: Boolean(client && parsed && parsed > 0n && outputDecimals !== undefined),
+    enabled: Boolean(client && liquid && parsed && parsed > 0n && outputDecimals !== undefined),
     refetchInterval: 12_000,
     queryFn: () => quoteBest(client!, parsed!, pay.address, pullToken),
   });
@@ -223,12 +237,14 @@ function SwapForm({ pullToken, fourMemeUrl }: { pullToken: Address; fourMemeUrl:
   const routeError =
     quote.data && !quote.data.ok
       ? quote.data.reason === "no-route"
-        ? "No PancakeSwap V2 pool for this pair yet. If the token is still on the four.meme bonding curve, it cannot be swapped until that migration."
+        ? "The V2 reserves were there, but this amount has no quote. Try again, or buy on Flap."
         : "The BNB Smart Chain node did not answer. Try the quote again."
       : null;
   const tokenUnread = pullMeta.isError ? "BNB Smart Chain could not read this token. Check the configured address." : null;
   const slippageError = useCustom && slippageBps === null ? "Enter a slippage from 0 to 50%, with at most two decimal places." : null;
-  const alert = formError || amountError || tokenUnread || slippageError || (shortBalance ? `Not enough ${pay.symbol}.` : null) || (gasTight ? "Leave a little BNB for the network fee." : null) || routeError;
+  const alert = liquid
+    ? formError || amountError || tokenUnread || slippageError || (shortBalance ? `Not enough ${pay.symbol}.` : null) || (gasTight ? "Leave a little BNB for the network fee." : null) || routeError
+    : formError;
 
   const minOut = quoted && slippageBps !== null ? minReceived(quoted.amountOut, slippageBps) : null;
   const receiveText =
@@ -248,7 +264,7 @@ function SwapForm({ pullToken, fourMemeUrl }: { pullToken: Address; fourMemeUrl:
   async function onSubmit() {
     setFormError(null);
     setDone(null);
-    if (!address) return;
+    if (!address || !liquid) return;
     let toastId: string | number | null = null;
     try {
       if (chainId !== BSC_CHAIN_ID) {
@@ -333,7 +349,7 @@ function SwapForm({ pullToken, fourMemeUrl }: { pullToken: Address; fourMemeUrl:
   }
 
   const busy = pending !== null;
-  const canSubmit = Boolean(address && parsed && parsed > 0n && quoted && slippageBps !== null && !alert && !busy && !typing && outputDecimals !== undefined);
+  const canSubmit = Boolean(liquid && address && parsed && parsed > 0n && quoted && slippageBps !== null && !alert && !busy && !typing && outputDecimals !== undefined);
   const buttonLabel = !address
     ? "Connect a wallet"
     : chainId !== BSC_CHAIN_ID
@@ -370,11 +386,22 @@ function SwapForm({ pullToken, fourMemeUrl }: { pullToken: Address; fourMemeUrl:
             );
           })}
         </div>
-        <button type="button" className="text-xs text-gold hover:text-ink" onClick={onMax} disabled={balance === null}>
-          {balance !== null && inputDecimals !== undefined ? `Balance ${formatAmount(balance, inputDecimals, 4)}` : "Balance —"}
-        </button>
+        {liquid ? (
+          <button type="button" className="font-mono text-[11px] text-gold hover:text-ink" onClick={onMax} disabled={balance === null}>
+            {balance !== null && inputDecimals !== undefined ? `Balance ${formatAmount(balance, inputDecimals, 4)}` : "Balance —"}
+          </button>
+        ) : null}
       </div>
+      <p className="mt-4 text-sm leading-6 text-muted">{checking ? "Reading PancakeSwap V2 reserves for this pair." : poolStatusCopy(kind, poolState)}</p>
+      <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.16em] text-gold">
+        <a className="hover:text-ink" href={`https://bscscan.com/token/${pullToken}`} target="_blank" rel="noreferrer">
+          {short(pullToken)}
+        </a>
+        {kind === "v2-tax" ? " · ends 7777 · V2 after migration" : kind === "infinity" ? " · ends 8888 · Infinity after migration" : ""}
+      </p>
 
+      {liquid ? (
+      <>
       <label className="mt-4 block" htmlFor="swap-amount">
         <span className="text-xs uppercase tracking-[0.16em] text-muted">You pay · {pay.blurb}</span>
         <input
@@ -492,10 +519,24 @@ function SwapForm({ pullToken, fourMemeUrl }: { pullToken: Address; fourMemeUrl:
         Quotes come from the V2 router at {short(PANCAKE_V2_ROUTER)}. The swap uses the fee-on-transfer method, so a token tax can make the received amount smaller than the quote. The quote is valid for {SWAP_DEADLINE_SECONDS / 60} minutes. This runs on BNB Smart Chain (chain {BSC_CHAIN_ID})
         {chainId && chainId !== BSC_CHAIN_ID ? `, and your wallet is on chain ${chainId}` : ""}.
       </p>
-      <p className="mt-2 text-xs text-muted">
-        Launch page:{" "}
-        <a className="text-gold hover:text-ink" href={fourMemeUrl} target="_blank" rel="noreferrer">
-          {fourMemeUrl.replace(/^https:\/\//, "")}
+      </>
+      ) : (
+        <div className="mt-5 grid gap-2">
+          <Button asChild size="lg" className="w-full">
+            <a href={tokenPage} target="_blank" rel="noreferrer">
+              {launchpadCta(tokenPage, true)}
+            </a>
+          </Button>
+          <Button asChild variant="outline" className="w-full">
+            <a href={pancakeSwapUrl(pullToken, inputCurrency(payId, pay.address))} target="_blank" rel="noreferrer">
+              Open in PancakeSwap
+            </a>
+          </Button>
+        </div>
+      )}
+      <p className="mt-4 text-xs text-muted">
+        <a className="text-gold hover:text-ink" href={tokenPage} target="_blank" rel="noreferrer">
+          {tokenPage.replace(/^https:\/\//, "")}
         </a>
       </p>
     </div>
