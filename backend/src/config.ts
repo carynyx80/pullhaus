@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { readFileSync } from "node:fs";
-import { getAddress, type Address } from "viem";
+import { getAddress, isAddress, type Address } from "viem";
 import { emptyDeployment, ZERO, type Deployment } from "@pullhaus/shared";
 
 function num(value: string | undefined, fallback: number): number {
@@ -43,7 +43,31 @@ export const config = {
     .split(",")
     .map((s) => s.trim().toUpperCase())
     .filter(Boolean),
+  pullTrade: optionalAddress("PULL_TRADE_ADDRESS"),
+  fourMemeUrl: optionalHttps("FOUR_MEME_URL", "https://four.meme"),
 };
+
+function optionalAddress(name: string): Address | null {
+  const value = process.env[name]?.trim();
+  if (!value) return null;
+  if (!isAddress(value)) throw new Error(`${name} is not an address`);
+  const address = getAddress(value);
+  if (address === ZERO) return null;
+  return address;
+}
+
+function optionalHttps(name: string, fallback: string): string {
+  const value = process.env[name]?.trim();
+  if (!value) return fallback;
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new Error(`${name} must be an https URL`);
+  }
+  if (url.protocol !== "https:") throw new Error(`${name} must be an https URL`);
+  return url.toString().replace(/\/$/, "");
+}
 
 // Foundry's published Anvil defaults. Compared so a copied local key is refused off Anvil and opBNB testnet.
 const ANVIL_KEYS = new Set([

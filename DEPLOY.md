@@ -24,6 +24,8 @@ The shared package compiles to `dist/` during that build. Next reads those files
 | --- | --- | --- |
 | `NEXT_PUBLIC_API_URL` | Required | Public Railway origin, no trailing slash. Example: `https://pullhaus-api.up.railway.app` |
 | `NEXT_PUBLIC_CHAIN_ID` | Optional | Chain wallets are pointed at. Default: BSC testnet `97` in production, Anvil in dev. Set `56` for mainnet. |
+| `NEXT_PUBLIC_PULL_TOKEN_ADDRESS` | Optional | Mainnet `$PULL` bought on the swap page (BNB Smart Chain, chain 56). Leave unset until the token launches. Do not use a placeholder. When unset, the page stays on “Launching soon” unless `/config` returns `pullTrade`, or the game deployment itself is chain 56 with a real token. |
+| `NEXT_PUBLIC_FOUR_MEME_URL` | Optional | https link for the four.meme launch. Default `https://four.meme`. The site env wins over the API when it is set. |
 | `COUNTRY_BLOCK_ENABLED` | Optional | `true` turns on the country block. Default off. Read by Next middleware. Not exposed to the browser. |
 | `BLOCKED_COUNTRIES` | Optional | Comma-separated ISO codes, used only when the toggle is `true`. Example: `US,GB`. Matched against `x-vercel-ip-country`. |
 | `NEXT_PUBLIC_DEV_WALLET` | Leave unset | Local only. `true` shows the Anvil patron and guest buttons. Do not set this on Vercel. |
@@ -93,6 +95,8 @@ Contract addresses come from environment variables. That overrides `DEPLOYMENT_P
 | `GREENFIELD_PUBLIC_URL` | Optional | Public object base. Falls back to the RPC URL. |
 | `COUNTRY_BLOCK_ENABLED` | Optional | `true` makes the API return 451 for blocked countries. |
 | `BLOCKED_COUNTRIES` | Optional | Comma-separated ISO codes. Matched against `x-vercel-ip-country` or `cf-ipcountry`. |
+| `PULL_TRADE_ADDRESS` | Optional | Mainnet `$PULL` returned as `pullTrade` on `GET /config`. Leave unset until launch. The web env `NEXT_PUBLIC_PULL_TOKEN_ADDRESS` wins when both are set. On chain 56, a non-mock `PULL_ADDRESS` is used when neither trade address is set. |
+| `FOUR_MEME_URL` | Optional | https link returned as `fourMemeUrl` on `GET /config`. Default `https://four.meme`. |
 
 Set the same `COUNTRY_BLOCK_ENABLED` and `BLOCKED_COUNTRIES` on Vercel and Railway if you want both the page and the API to block.
 

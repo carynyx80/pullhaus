@@ -4,6 +4,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
 import { useRef } from "react";
 import { CardView } from "@/components/card-view";
+import { HowItWorks } from "@/components/how-it-works";
 import { Button } from "@/components/ui/button";
 import type { DisplayCard } from "@/lib/cards";
 
@@ -39,6 +40,9 @@ export default function HomePage() {
                 <Link href="/packs">Open a pack</Link>
               </Button>
               <Button asChild size="lg" variant="outline">
+                <Link href="/how-it-works">How it works</Link>
+              </Button>
+              <Button asChild size="lg" variant="ghost">
                 <Link href="/odds">Read the odds</Link>
               </Button>
             </div>
@@ -88,6 +92,9 @@ export default function HomePage() {
             </article>
           ))}
         </div>
+      </section>
+      <section className="mx-auto max-w-6xl px-4 py-20">
+        <HowItWorks compact />
       </section>
     </div>
   );

@@ -78,6 +78,8 @@ app.get("/config", async () => ({
   ...deployment,
   publicUrl: config.publicUrl,
   wsUrl: config.publicUrl.replace(/^http/, "ws") + "/ws",
+  pullTrade: config.pullTrade,
+  fourMemeUrl: config.fourMemeUrl,
 }));
 
 app.get("/auth/nonce", async () => ({ nonce: await issueNonce() }));

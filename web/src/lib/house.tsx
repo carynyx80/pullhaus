@@ -3,17 +3,22 @@
 import { emptyDeployment, isDeployed, type Deployment } from "@pullhaus/shared";
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { useAccount, useSwitchChain } from "wagmi";
+import { tradeHintsFromConfig, type TradeHints } from "./trade";
 import { API_URL } from "./utils";
 
 type HouseState = {
   deployment: Deployment;
+  trade: TradeHints;
   ready: boolean;
   error: string | null;
   refresh: () => void;
 };
 
+const emptyTrade: TradeHints = { pullToken: null, fourMemeUrl: "" };
+
 const HouseContext = createContext<HouseState>({
   deployment: emptyDeployment(),
+  trade: emptyTrade,
   ready: false,
   error: null,
   refresh: () => {},
@@ -21,13 +26,16 @@ const HouseContext = createContext<HouseState>({
 
 export function HouseProvider({ children }: { children: ReactNode }) {
   const [deployment, setDeployment] = useState<Deployment>(emptyDeployment());
+  const [trade, setTrade] = useState<TradeHints>(emptyTrade);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const refresh = () => {
     fetch(`${API_URL}/config`)
       .then(async (response) => {
         if (!response.ok) throw new Error("config");
-        setDeployment(await response.json());
+        const body: unknown = await response.json();
+        setDeployment(body as Deployment);
+        setTrade(tradeHintsFromConfig(body));
         setError(null);
       })
       .catch(() => setError("The atelier API is not running yet."))
@@ -37,7 +45,7 @@ export function HouseProvider({ children }: { children: ReactNode }) {
     refresh();
   }, []);
   return (
-    <HouseContext.Provider value={{ deployment, ready, error, refresh }}>
+    <HouseContext.Provider value={{ deployment, trade, ready, error, refresh }}>
       <ChainGuard chainId={isDeployed(deployment) ? deployment.chainId : 0} />
       {children}
     </HouseContext.Provider>

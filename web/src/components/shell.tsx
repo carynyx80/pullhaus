@@ -8,6 +8,7 @@ import { Sheet, SheetClose, SheetContent, SheetTrigger } from "./ui/sheet";
 
 const links = [
   ["Packs", "/packs"],
+  ["Swap", "/swap"],
   ["Inventory", "/inventory"],
   ["Forge", "/forge"],
   ["Burn", "/burn"],
@@ -15,6 +16,7 @@ const links = [
   ["Market", "/market"],
   ["Arena", "/battle"],
   ["Odds", "/odds"],
+  ["How it works", "/how-it-works"],
 ];
 
 export function Shell({ children }: { children: React.ReactNode }) {
@@ -27,9 +29,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
             <span className="grid size-8 place-items-center rounded-full bg-ember text-xs text-[#2a100b]">P</span>
             Pullhaus
           </Link>
-          <nav className="ml-4 hidden items-center gap-4 text-sm text-muted lg:flex">
+          <nav className="ml-4 hidden min-w-0 flex-1 items-center gap-3 overflow-x-auto text-sm text-muted lg:flex">
             {links.map(([label, href]) => (
-              <Link key={href} href={href} className={path === href ? "text-ink" : "hover:text-ink"}>
+              <Link key={href} href={href} className={`shrink-0 ${path === href ? "text-ink" : "hover:text-ink"}`}>
                 {label}
               </Link>
             ))}
@@ -69,7 +71,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
         <div className="hairline mb-6 h-px" />
         <div className="flex flex-col justify-between gap-3 sm:flex-row">
           <p>Pullhaus on BNB Chain. Burn points are perks, not a promise of profit.</p>
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-4">
+            <Link href="/how-it-works">How it works</Link>
+            <Link href="/swap">Get $PULL</Link>
             <Link href="/odds">Published odds</Link>
             <Link href="/admin">Admin</Link>
           </div>
